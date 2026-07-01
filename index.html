@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Level Test FEDAC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --primary-hover: #004085;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #666666;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --border-radius: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            
+            /* SEGURETAT: Evita que es pugui seleccionar el text del test */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            
+            /* SEGURETAT EXTRA: Truc per a aplicacions web de mòbil que ajuda a evitar captures en sistemes iOS */
+            -webkit-touch-callout: none;
+        }
+        
+        /* Efecte borrós de transició quan detectem accions sospitoses de captura */
+        .blur-antishot {
+            filter: blur(15px) !important;
+            transition: filter 0.1s ease;
+        }
+        
+        .container { width: 100%; max-width: 700px; background-color: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 40px; transition: all 0.3s ease; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; }
+        header h1 { color: var(--primary-color); font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        header p { color: var(--text-muted); font-size: 0.95rem; }
+        .badge { display: inline-block; background-color: #e1ecf4; color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; margin-top: 10px; }
+        .hidden { display: none !important; }
+        .screen { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .screen p { margin-bottom: 25px; font-size: 1.1rem; line-height: 1.6; }
+        
+        .input-group { width: 100%; max-width: 320px; margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: var(--text-color); }
+        .name-input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: var(--border-radius); font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        .name-input:focus { border-color: var(--primary-color); }
+        
+        .question-box { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .question-text { font-size: 1.2rem; font-weight: 500; margin-bottom: 25px; line-height: 1.5; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .option-btn { background-color: #fff; border: 2px solid #e0e0e0; border-radius: var(--border-radius); padding: 16px 20px; text-align: left; font-family: inherit; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; }
+        .option-btn:hover { border-color: var(--primary-color); background-color: #f8faff; }
+        .option-btn.selected { border-color: var(--primary-color); background-color: #e1ecf4; font-weight: 600; }
+        .btn { background-color: var(--primary-color); color: white; border: none; border-radius: var(--border-radius); padding: 14px 30px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; width: 100%; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .progress-container { width: 100%; background-color: #e9ecef; border-radius: 10px; height: 8px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { background-color: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease; }
+        
+        .result-title { font-size: 1.5rem; margin-bottom: 15px; line-height: 1.4; color: var(--text-color); }
+        .result-level { font-size: 3.5rem; font-weight: 700; color: var(--success-color); margin-bottom: 20px; background: #eafaf1; padding: 10px 30px; border-radius: var(--border-radius); display: inline-block; width: 100%; }
+        
+        /* Disseny especial per a la pantalla de bloqueig per trampa */
+        .invalid-level { font-size: 2.2rem; font-weight: 700; color: var(--danger-color); margin-bottom: 20px; background: #fdeaea; padding: 15px 30px; border-radius: var(--border-radius); display: inline-block; width: 100%; }
+
+        .transition-title { font-size: 1.8rem; font-weight: 600; color: var(--success-color); margin-bottom: 15px; }
+        .transition-text { font-size: 1.2rem; line-height: 1.6; color: var(--text-color); margin-bottom: 20px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--success-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div id="main-content" class="container">
+    <header>
+        <h1>English Level Test FEDAC</h1>
+        <p id="subtitle">Avalua el teu domini d'anglès amb el format oficial de Cambridge</p>
+        <div id="level-badge" class="badge hidden">Nivell Actual: A1</div>
+    </header>
+    
+    <div id="start-screen" class="screen">
+        <p>Benvingut/da al test de nivell adaptatiu de la FEDAC.<br>L'examen començarà amb el nivell A1 i s'anirà adaptant segons les teves respostes encertades.</p>
+        <p style="color: var(--danger-color); font-size: 0.9rem; font-weight: 600;">⚠️ ATENCIÓ: Si surts de la pestanya, obres una de nova o intentes fer captures de pantalla, el test quedarà invalidat.</p>
+        
+        <div class="input-group">
+            <label for="student-name">Escriu el teu nom i cognom:</label>
+            <input type="text" id="student-name" class="name-input" placeholder="Ex: Joan Garcia" autocomplete="off">
+        </div>
+        
+        <button class="btn" onclick="quiz.start()">Començar el test</button>
+    </div>
+    
+    <div id="transition-screen" class="screen hidden">
+        <div class="transition-title">🎉 <span class="user-placeholder"></span>, felicitats!</div>
+        <p id="transition-message" class="transition-text">Anem al nivell...</p>
+        <div class="loader"></div>
+    </div>
+
+    <div id="quiz-screen" class="question-box hidden">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="question-text" class="question-text">Pregunta aquí</div>
+        <div id="options-container" class="options-container"></div>
+        <button id="next-btn" class="btn" onclick="quiz.nextQuestion()">Següent pregunta</button>
+    </div>
+    
+    <div id="result-screen" class="screen hidden">
+        <div id="result-title-container" class="result-title"></div>
+        <div id="final-level" class="result-level">--</div>
+        <p id="result-details" style="color: var(--text-muted);">Has completat el qüestionari adaptatiu.</p>
+        <button id="reload-btn" class="btn" style="margin-top: 25px;" onclick="location.reload()">Tornar a fer el test</button>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// SEGURETAT: BLOCATGE DE CÒPIA I CLIC DRET
+// ==========================================
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('keydown', function(e) {
+    // Bloqueja Ctrl+C (Copiar), Ctrl+X (Tallar), Ctrl+U (Veure codi font), Ctrl+P (Imprimir)
+    if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U' || e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        return false;
+    }
+    // Bloqueja F12 (Eines de desenvolupador)
+    if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // TRUC ANTI-CAPTURA: Si premen la tona d'imprimir pantalla (PrintScreen) o combinacions de capture en Mac (Cmd+Shift+3/4)
+    if (e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4'))) {
+        document.getElementById('main-content').classList.add('blur-antishot');
+        if (quiz.isQuizActive) {
+            quiz.invalidateByCheating("S'ha detectat un intent de captura de pantalla o drecera no permesa.");
+        }
+    }
+});
+
+// Si deixen anar la tecla, traiem el borrós en cas que estiguin fora del test, però si estaven fent el test ja els haurà tret
+document.addEventListener('keyup', function(e) {
+    document.getElementById('main-content').classList.remove('blur-antishot');
+});
+
+// Si l'usuari intenta copiar amb el ratolí enganxant coses
+document.addEventListener('copy', (e) => e.preventDefault());
+document.addEventListener('cut', (e) => e.preventDefault());
+
+// Base de dades de preguntes
+const questionsData = {
+    'A1': [
+        { q: "Hello! What __________ your name?", o: ["is", "are", "am"], a: 0 },
+        { q: "I __________ a student. I study English.", o: ["is", "am", "are"], a: 1 },
+        { q: "Look at __________ birds up there in the tree!", o: ["this", "that", "those"], a: 2 },
+        { q: "She __________ two brothers.", o: ["have", "has", "having"], a: 1 },
+        { q: "__________ you like chocolate?", o: ["Do", "Does", "Are"], a: 0 },
+        { q: "There __________ a big table in the kitchen.", o: ["are", "is", "am"], a: 1 },
+        { q: "He __________ to school by bus every day.", o: ["go", "going", "goes"], a: 2 },
+        { q: "Where __________ my keys? I can't find them.", o: ["is", "are", "am"], a: 1 },
+        { q: "Listen! Sarah __________ the piano right now.", o: ["plays", "is playing", "play"], a: 1 },
+        { q: "I don't like __________ apples.", o: ["this", "these", "that"], a: 1 },
+        { q: "__________ you swim? Yes, I can.", o: ["Can", "Do", "Are"], a: 0 },
+        { q: "This is my sister. __________ name is Anna.", o: ["His", "Her", "Your"], a: 1 },
+        { q: "We usually have lunch __________ 1 o'clock.", o: ["on", "in", "at"], a: 2 },
+        { q: "There aren't __________ tomatoes in the fridge.", o: ["any", "some", "a"], a: 0 },
+        { q: "My father is __________ doctor.", o: ["a", "an", "the"], a: 0 },
+        { q: "VOCABULARY: You use this to write on paper.", o: ["A chair", "A pen", "A window"], a: 1 },
+        { q: "VOCABULARY: Your mother's brother is your __________.", o: ["uncle", "aunt", "cousin"], a: 0 },
+        { q: "VOCABULARY: Red, blue, yellow, and green are __________.", o: ["animals", "clothes", "colours"], a: 2 },
+        { q: "VOCABULARY: I wear a warm __________ when it is cold outside.", o: ["T-shirt", "jacket", "skirt"], a: 1 },
+        { q: "VOCABULARY: This animal is big, grey, and has got a long nose (trunk).", o: ["Elephant", "Cat", "Mouse"], a: 0 },
+        { q: "VOCABULARY: Saturday and Sunday are the __________.", o: ["week", "weekend", "months"], a: 1 },
+        { q: "VOCABULARY: You go to this place to watch a film.", o: ["Hospital", "Cinema", "Park"], a: 1 },
+        { q: "VOCABULARY: Tomatoes, carrots, and potatoes are __________.", o: ["fruit", "meat", "vegetables"], a: 2 },
+        { q: "VOCABULARY: My favourite sport is __________. I love kicking the ball.", o: ["football", "tennis", "swimming"], a: 0 },
+        { q: "VOCABULARY: When the sun is shining, the weather is __________.", o: ["rainy", "sunny", "snowy"], a: 1 }
+    ],
+    'A2': [
+        { q: "Yesterday, we __________ to the cinema and saw a great comedy.", o: ["go", "went", "gone"], a: 1 },
+        { q: "This laptop is __________ than my old one.", o: ["more fast", "faster", "the fastest"], a: 1 },
+        { q: "Have you __________ been to London?", o: ["ever", "never", "already"], a: 0 },
+        { q: "If it rains tomorrow, we __________ stay at home.", o: ["want", "did", "will"], a: 2 },
+        { q: "I was tired, __________ I went to bed early.", o: ["because", "so", "but"], a: 1 },
+        { q: "She __________ basketball when she hurt her leg.", o: ["played", "was playing", "is playing"], a: 1 },
+        { q: "This is the restaurant __________ they make the best pizzas.", o: ["where", "which", "who"], a: 0 },
+        { q: "You __________ study hard if you want to pass the exam.", o: ["must", "want", "need"], a: 0 },
+        { q: "How __________ money do you need for the concert ticket?", o: ["many", "much", "long"], a: 1 },
+        { q: "I haven't finished my homework __________.", o: ["already", "just", "yet"], a: 2 },
+        { q: "What __________ doing at 5 o'clock yesterday afternoon?", o: ["were you", "did you", "you were"], a: 0 },
+        { q: "English is __________ language to learn.", o: ["easy", "easier", "an easy"], a: 2 },
+        { q: "I'm looking forward __________ you next week.", o: ["to seeing", "to see", "see"], a: 0 },
+        { q: "There are only a __________ biscuits left in the box.", o: ["little", "few", "any"], a: 1 },
+        { q: "He decided __________ a new car next month.", o: ["buying", "buy", "to buy"], a: 2 },
+        { q: "VOCABULARY: A person whose job is to repair cars and other machines.", o: ["Manager", "Mechanic", "Scientist"], a: 1 },
+        { q: "VOCABULARY: I need to book a flight, so I am going to the __________.", o: ["travel agent's", "chemist's", "library"], a: 0 },
+        { q: "VOCABULARY: When you feel __________, you want to rest or sleep.", o: ["bored", "angry", "tired"], a: 2 },
+        { q: "VOCABULARY: You use this item to dry yourself after taking a shower.", o: ["Blanket", "Towel", "Pillow"], a: 1 },
+        { q: "VOCABULARY: To go from one side of a river to the other, you walk across a __________.", o: ["bridge", "tunnel", "path"], a: 0 },
+        { q: "VOCABULARY: I lost my __________ yesterday, so I couldn't pay for my lunch.", o: ["wallet", "luggage", "ticket"], a: 0 },
+        { q: "VOCABULARY: This film was so __________ that I almost fell asleep.", o: ["exciting", "boring", "frightening"], a: 1 },
+        { q: "VOCABULARY: Before you get on a plane, you must show your boarding __________.", o: ["pass", "passport", "check"], a: 0 },
+        { q: "VOCABULARY: My brother is very __________. He always gets 10 out of 10 in exams.", o: ["clever", "friendly", "polite"], a: 0 },
+        { q: "VOCABULARY: We need to buy a __________ of cereal at the supermarket.", o: ["bottle", "packet", "can"], a: 1 }
+    ],
+    'B1': [
+        { q: "This castle __________ by millions of tourists every year.", o: ["visits", "is visited", "is visiting", "visited"], a: 1 },
+        { q: "If I __________ more free time, I would take up tennis.", o: ["have", "will have", "had", "would have"], a: 2 },
+        { q: "The teacher told us __________ talking during the exam.", o: ["to stop", "stop", "stopping", "that we stop"], a: 0 },
+        { q: "You __________ bring an umbrella. It’s not going to rain at all.", o: ["mustn't", "shouldn't", "couldn't", "don't have to"], a: 3 },
+        { q: "I don't mind __________ the housework as long as you do the cooking.", o: ["to do", "doing", "do", "for doing"], a: 1 },
+        { q: "I've been playing the guitar __________ five years.", o: ["since", "during", "for", "ago"], a: 2 },
+        { q: "He didn't enjoy the film, and __________ did I.", o: ["neither", "so", "either", "too"], a: 0 },
+        { q: "That’s the man __________ car was stolen last night.", o: ["who", "which", "whose", "whom"], a: 2 },
+        { q: "I wish I __________ speak French fluently.", o: ["can", "could", "will", "would can"], a: 1 },
+        { q: "By the time we arrived at the cinema, the movie __________.", o: ["already started", "has already started", "had already started", "was already starting"], a: 2 },
+        { q: "CLOZE: Last year, I decided to ______ up a new hobby.", o: ["take", "get", "make", "set"], a: 0 },
+        { q: "CLOZE: At first, I wasn't very good ______ taking photos.", o: ["in", "at", "on", "for"], a: 1 },
+        { q: "CLOZE: But the teacher gave me some great ______.", o: ["advices", "advice", "advertisement", "tip"], a: 1 },
+        { q: "CLOZE: Now, I am really interested ______ capturing nature.", o: ["about", "on", "in", "for"], a: 2 },
+        { q: "CLOZE: Next month, I'm going to ______ part in my first exhibition!", o: ["do", "make", "have", "take"], a: 3 },
+        { q: "VOCABULARY: A person who is flying on an aircraft, but who is not the pilot.", o: ["Passenger", "Customer", "Stranger", "Guest"], a: 0 },
+        { q: "VOCABULARY: If you are __________, you are worried or nervous.", o: ["cheerful", "anxious", "jealous", "confident"], a: 1 },
+        { q: "VOCABULARY: The money you get back when you pay for something.", o: ["Receipt", "Bill", "Change", "Price"], a: 2 },
+        { q: "VOCABULARY: I need to __________ this library book before Friday.", o: ["remind", "return", "revise", "replace"], a: 1 },
+        { q: "VOCABULARY: A large building where goods are manufactured by machines.", o: ["Company", "Department", "Industry", "Factory"], a: 3 },
+        { q: "VOCABULARY: I couldn't get tickets for the concert because it was completely __________.", o: ["booked up", "sold out", "called off", "put on"], a: 1 },
+        { q: "VOCABULARY: A period of ten years is called a __________.", o: ["century", "millennium", "decade", "generation"], a: 2 },
+        { q: "VOCABULARY: She is very __________. She always shares her things.", o: ["generous", "reliable", "sensible", "honest"], a: 0 },
+        { q: "VOCABULARY: The scenery in the mountains was absolutely __________.", o: ["breathtaking", "frightening", "satisfactory", "accurate"], a: 0 },
+        { q: "VOCABULARY: I need to make an __________ to see the doctor next Tuesday.", o: ["application", "arrangement", "interview", "appointment"], a: 3 }
+    ],
+    'B2': [
+        { q: "CLOZE: Living near a park can have a significant ______ on well-being.", o: ["result", "impact", "consequence", "outcome"], a: 1 },
+        { q: "CLOZE: Psychologists discovered that people ______ to have lower stress.", o: ["tend", "lean", "practice", "habit"], a: 0 },
+        { q: "CLOZE: Nature helps us to ______ from the daily pressures.", o: ["switch off", "put off", "turn away", "break out"], a: 0 },
+        { q: "CLOZE: Urban parks provide an opportunity to ______ up outdoor sports.", o: ["make", "keep", "take", "catch"], a: 2 },
+        { q: "CLOZE: Local councils are urged not to ______ down the chance.", o: ["deny", "reject", "turn", "dismiss"], a: 2 },
+        { q: "CLOZE: Although space is at a ______ in most modern cities...", o: ["premium", "price", "cost", "value"], a: 0 },
+        { q: "CLOZE: A healthy city ______ on a healthy population.", o: ["insists", "depends", "base", "trusts"], a: 1 },
+        { q: "CLOZE: ...and we cannot afford to ______ this issue for granted.", o: ["hold", "accept", "take", "regard"], a: 2 },
+        { q: "TRANSFORMATION: 'I regret not studying harder.' -> I ______ harder for the final exam.", o: ["regret not studying", "wish I studied", "regret to study", "should study"], a: 0 },
+        { q: "TRANSFORMATION: 'They are going to build a new cinema.' -> A new cinema ______ in the town centre.", o: ["is going to build", "is going to be built", "will be building", "is building"], a: 1 },
+        { q: "TRANSFORMATION: 'Don't leave luggage unattended.' -> The guard ______ our luggage unattended.", o: ["warned us to not leave", "warned us not to leave", "warned not leaving", "said to not leave"], a: 1 },
+        { q: "TRANSFORMATION: 'It was such a boring film...' -> The film ______ that I fell asleep.", o: ["was so boring", "was very boring", "such bored us", "was too boring"], a: 0 },
+        { q: "TRANSFORMATION: 'I'm sure Jonathan didn't break the window.' -> Jonathan ______ the window.", o: ["mustn't have broken", "can't have broken", "shouldn't break", "didn't have broken"], a: 1 },
+        { q: "TRANSFORMATION: 'We didn't go because of the weather.' -> We would have gone ______ so terrible.", o: ["if the weather wasn't", "if the weather hadn't been", "had the weather not being", "if it wasn't"], a: 1 },
+        { q: "TRANSFORMATION: 'Alex started working here 3 years ago.' -> Alex ______ three years.", o: ["works here for", "is working here since", "has been working here for", "has worked here since"], a: 2 },
+        { q: "VOCABULARY: The company had to __________ the meeting because of traffic.", o: ["put off", "call off", "look into", "turn up"], a: 0 },
+        { q: "VOCABULARY: I'm afraid I am not very __________ with this software.", o: ["aware", "accustomed", "familiar", "experienced"], a: 2 },
+        { q: "VOCABULARY: The doctor told her that taking the medication would __________ the pain.", o: ["cure", "relieve", "recover", "heal"], a: 1 },
+        { q: "VOCABULARY: She is highly __________ for the job; she has two degrees.", o: ["quality", "capable", "qualified", "expert"], a: 2 },
+        { q: "VOCABULARY: The decision to close the library caused a lot of public __________.", o: ["resentment", "disappointment", "disagreement", "opposition"], a: 0 },
+        { q: "VOCABULARY: I need to find a job with a steady __________.", o: ["salary", "income", "wages", "payment"], a: 1 },
+        { q: "VOCABULARY: Environmentalists are trying to raise __________ about plastic pollution.", o: ["knowledge", "understanding", "awareness", "recognition"], a: 2 },
+        { q: "VOCABULARY: It's __________ cold today, so make sure you wear a thick coat.", o: ["bitterly", "strongly", "heavily", "strictly"], a: 0 },
+        { q: "VOCABULARY: He didn't mean to offend you; he made that comment entirely by __________.", o: ["error", "fault", "accident", "chance"], a: 2 },
+        { q: "VOCABULARY: The new campaign resulted in a dramatic increase in __________.", o: ["benefits", "profits", "incomes", "earnings"], a: 1 }
+    ],
+    'C1': [
+        { q: "CLOZE: Intuition, often referred to ______ a 'gut feeling'...", o: ["as", "like", "for", "by"], a: 0 },
+        { q: "CLOZE: It is that sudden flash of insight ______ tells us whether...", o: ["who", "what", "that", "where"], a: 2 },
+        { q: "CLOZE: Scientists dismissed intuition as nothing ______ than superstition.", o: ["less", "more", "other", "better"], a: 1 },
+        { q: "CLOZE: It turns ______ that our brains are constantly processing info.", o: ["up", "into", "out", "on"], a: 2 },
+        { q: "CLOZE: ...and, ______ faced with a similar situation, it triggers a response.", o: ["when", "while", "then", "despite"], a: 0 },
+        { q: "CLOZE: Therefore, far from ______ irrational, intuition is sophisticated.", o: ["be", "been", "being", "to be"], a: 2 },
+        { q: "CLOZE: Nevertheless, experts warn ______ relying solely on intuition.", o: ["about", "against", "from", "for"], a: 1 },
+        { q: "CLOZE: Balance, it seems, is key ______ making the best decisions.", o: ["to", "for", "of", "in"], a: 0 },
+        { q: "TRANSFORMATION: 'As soon as it started, it rained.' -> No ______ than it began to rain.", o: ["sooner had the match started", "sooner the match started", "sooner did the match start", "asoner had started the match"], a: 0 },
+        { q: "TRANSFORMATION: 'It is highly likely...' -> There is ______ the new product next month.", o: ["every likelihood of launching", "every likelihood that the company will launch", "high probabilities to launch", "much chance for launching"], a: 1 },
+        { q: "TRANSFORMATION: 'I'm sorry I didn't return your call.' -> Mark ______ her call earlier.", o: ["apologised for not returning", "apologised to Sophia for not returning", "apologised to not return", "apologised because he didn't return"], a: 1 },
+        { q: "TRANSFORMATION: 'I only passed because you helped me.' -> Had ______ help, I wouldn't have passed.", o: ["it not been for your", "you not given your", "I lacked of your", "it been for your"], a: 0 },
+        { q: "TRANSFORMATION: 'The manager fully intends to dismiss...' -> The manager has ______ any employee...", o: ["every intention of dismissing", "the full intention to dismiss", "intends highly of dismissing", "the intention to dismissing"], a: 0 },
+        { q: "TRANSFORMATION: 'It's a pity you didn't tell me earlier.' -> I ______ about the change earlier.", o: ["wish you told me", "wish you had told me", "wish you would tell me", "regret you didn't tell me"], a: 1 },
+        { q: "TRANSFORMATION: 'Many believe the monument was built by aliens.' -> It ______ the monument was built by aliens.", o: ["is widely believed that", "has widely believed that", "is believed widely as", "widely believes that"], a: 0 },
+        { q: "VOCABULARY: The government's new economic policy has drawn __________ criticism.", o: ["fierce", "strict", "heavy", "hard"], a: 0 },
+        { q: "VOCABULARY: I was completely __________ by his sudden decision to resign; nobody saw it coming.", o: ["baffled", "blurred", "battered", "bounded"], a: 0 },
+        { q: "VOCABULARY: The project failed because the team members were working at __________ purposes.", o: ["crossed", "conflicting", "opposite", "tangled"], a: 0 },
+        { q: "VOCABULARY: She has an __________ eye for detail, which makes her an excellent editor.", o: ["infallible", "impeccable", "acute", "unerring"], a: 2 },
+        { q: "VOCABULARY: The company’s profits have plummeted, and they are now on the __________ of bankruptcy.", o: ["fringe", "brink", "border", "margin"], a: 1 },
+        { q: "VOCABULARY: After hours of intense negotiation, the two countries finally managed to __________ a deal.", o: ["strike", "hit", "wind", "bind"], a: 0 },
+        { q: "VOCABULARY: His arguments were so __________ that the entire committee voted in favour.", o: ["compelling", "compulsory", "compulsive", "compellingly"], a: 0 },
+        { q: "VOCABULARY: The internal report __________ light on the structural flaws within the organisation.", o: ["cast", "dropped", "gave", "threw"], a: 0 },
+        { q: "VOCABULARY: She is a very reserved person who rarely, if __________, expresses her emotions.", o: ["ever", "never", "always", "sometimes"], a: 0 },
+        { q: "VOCABULARY: The new regulations will come into __________ starting from the first of January.", o: ["force", "impact", "power", "rule"], a: 0 }
+    ],
+    'C2': [
+        { q: "WORD FORMATION: Purest view changes with deep ______ (APPROVE).", o: ["disapproval", "unapproval", "approveless", "misapproval"], a: 0 },
+        { q: "WORD FORMATION: Fear that a generation will become ______ (ARTICULATE) in formal settings.", o: ["inarticulate", "unarticulate", "disarticulate", "nonarticulate"], a: 0 },
+        { q: "WORD FORMATION: Sociolinguists offer a more ______ (REASSURE) perspective.", o: ["reassuring", "reSample", "reassurance", "reassuringly"], a: 0 },
+        { q: "WORD FORMATION: It demonstrates the ______ (RESOURCE) of human communication.", o: ["resourcefulness", "resources", "resourcing", "resourcelessness"], a: 0 },
+        { q: "WORD FORMATION: To label these adaptations as 'incorrect' is an ______ (OVERSIMPLIFY).", o: ["oversimplification", "oversimplifying", "oversimplify", "oversimplified"], a: 0 },
+        { q: "WORD FORMATION: Certain archaic grammatical structures are falling into ______ (USE).", o: ["disuse", "misuse", "unuse", "uselessness"], a: 0 },
+        { q: "WORD FORMATION: Language evolution is ______ (STOP).", o: ["unstoppable", "instoppable", "stopless", "non-stoppable"], a: 0 },
+        { q: "WORD FORMATION: The survival of any dialect depends on its ______ (UTILE).", o: ["utility", "utilization", "utilitarian", "utileness"], a: 0 },
+        { q: "TRANSFORMATION: 'Only when the office closed I realized...' -> Not ______ did I realize...", o: ["until the office closed", "until the office had closed", "only when office closed", "until the office closed did"], a: 0 },
+        { q: "TRANSFORMATION: 'The board will probably choose Elena.' -> Elena ______ chosen for the position.", o: ["stands a good chance of being", "stands to be", "has a clear stand to be", "stands likely of"], a: 2 },
+        { q: "TRANSFORMATION: 'Nobody ever told me.' -> At ______ informed about the alteration.", o: ["no time was I", "any time I was", "no time I was ever", "never time was I"], a: 0 },
+        { q: "TRANSFORMATION: 'Determined to finish despite knee injury.' -> ...finish the marathon ______ knee injury was.", o: ["no matter how severe his", "regardless how bad the", "even if severe his", "no matter the severity of"], a: 0 },
+        { q: "TRANSFORMATION: 'I don't think it's a good idea to text him.' -> You ______ him right now because he is furious.", o: ["might as well not text", "may well not text", "had better to not text", "would as well not text"], a: 0 },
+        { q: "TRANSFORMATION: 'Council decided to completely demolish...' -> Building is going ______ by the council.", o: ["to be razed to the ground", "to be totally demolished", "to be broken down", "to ground down"], a: 0 },
+        { q: "TRANSFORMATION: 'If it hadn't been for the goalkeeper...' -> We would have lost the match ______ goalkeeper's save.", o: ["but for the", "except for the", "if not the", "save for the"], a: 0 },
+        { q: "VOCABULARY: The government's decision to cut funding has __________ a fierce debate.", o: ["ignited", "provoked", "triggered", "All of the above"], a: 3 },
+        { q: "VOCABULARY: He has a tendency to __________ hairs over minor details.", o: ["split", "slice", "break", "cut"], a: 0 },
+        { q: "VOCABULARY: The testimony given by the key witness was completely __________.", o: ["unassailable", "imperceptible", "intangible", "inadvertent"], a: 0 },
+        { q: "VOCABULARY: After working twenty hours without a break, she was looking decidedly __________.", o: ["down and out", "high and dry", "rough and ready", "done in"], a: 3 },
+        { q: "VOCABULARY: The company's new flagship store is a __________ example of cutting-edge architecture.", o: ["shining", "sterling", "prime", "stellar"], a: 2 },
+        { q: "VOCABULARY: I tried to reason with him, but his arguments were so __________.", o: ["devious", "tortuous", "specious", "superficial"], a: 2 },
+        { q: "VOCABULARY: The news of the sudden political coup came like a bolt from the __________.", o: ["blue", "sky", "dark", "storm"], a: 0 },
+        { q: "VOCABULARY: She has an __________ ability to anticipate market trends.", o: ["canny", "unearthly", "anomalous", "eccentric"], a: 0 },
+        { q: "VOCABULARY: The sudden influx of cheap imports has dealt a __________ blow.", o: ["crushing", "smashing", "crashing", "bruising"], a: 0 },
+        { q: "VOCABULARY: He is a man of few words who rarely __________ his emotions.", o: ["betrays", "uncovers", "leaks", "exposes"], a: 0 }
+    ]
+};
+
+class LevelQuiz {
+    constructor(data) {
+        this.data = data;
+        this.levelsOrder = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.correctAnswersInLevel = 0;
+        this.selectedOption = null;
+        this.studentName = "";
+        this.isQuizActive = false;
+    }
+    get currentLevel() { return this.levelsOrder[this.currentLevelIndex]; }
+    get currentQuestionsList() { return this.data[this.currentLevel]; }
+    
+    start() {
+        const nameInput = document.getElementById('student-name');
+        this.studentName = nameInput.value.trim();
+        
+        if (this.studentName === "") {
+            alert("Per favor, escriu el teu nom abans de començar el test.");
+            return;
+        }
+        
+        const placeholders = document.querySelectorAll('.user-placeholder');
+        placeholders.forEach(el => el.innerText = this.studentName);
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        document.getElementById('level-badge').classList.remove('hidden');
+        
+        this.isQuizActive = true;
+        this.loadQuestion();
+    }
+    
+    loadQuestion() {
+        this.selectedOption = null;
+        const badge = document.getElementById('level-badge');
+        badge.innerText = `Alumne/a: ${this.studentName} | Bloc actiu: ${this.currentLevel}`;
+        const qData = this.currentQuestionsList[this.currentQuestionIndex];
+        const progressPercent = (this.currentQuestionIndex / this.currentQuestionsList.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        document.getElementById('question-text').innerText = `${this.currentQuestionIndex + 1}. ${qData.q}`;
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        qData.o.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.innerText = option;
+            button.onclick = () => this.selectOption(index, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+    
+    selectOption(index, buttonElement) {
+        this.selectedOption = index;
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(btn => btn.classList.remove('selected'));
+        buttonElement.classList.add('selected');
+    }
+    
+    nextQuestion() {
+        if (this.selectedOption === null) {
+            alert("Per favor, selecciona una resposta abans de continuar.");
+            return;
+        }
+        const correctAnswer = this.currentQuestionsList[this.currentQuestionIndex].a;
+        if (this.selectedOption === correctAnswer) {
+            this.correctAnswersInLevel++;
+        }
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= this.currentQuestionsList.length) {
+            this.evaluateLevelTransition();
+        } else {
+            this.loadQuestion();
+        }
+    }
+    
+    evaluateLevelTransition() {
+        const totalQuestions = this.currentQuestionsList.length;
+        const scorePercentage = (this.correctAnswersInLevel / totalQuestions) * 100;
+        const passed = scorePercentage >= 90;
+        
+        if (!passed) {
+            let textTitol = `<strong>${this.studentName}</strong>, tens un nivell`;
+            let codiNivell = "";
+            
+            if (this.currentLevel === 'A1') codiNivell = "preA1";
+            else if (this.currentLevel === 'A2') codiNivell = "A1+";
+            else if (this.currentLevel === 'B1') codiNivell = "A2+";
+            else if (this.currentLevel === 'B2') codiNivell = "B1+"; 
+            else if (this.currentLevel === 'C1') codiNivell = "B2+"; 
+            else if (this.currentLevel === 'C2') codiNivell = "C1+";
+            
+            this.isQuizActive = false;
+            this.showResults(textTitol, codiNivell, false);
+        } else {
+            if (this.currentLevel === 'C2') {
+                let textTitol = `<strong>${this.studentName}</strong>, felicitats el teu nivell és`;
+                this.isQuizActive = false;
+                this.showResults(textTitol, "C2", false);
+            } else {
+                const nextLevelName = this.levelsOrder[this.currentLevelIndex + 1];
+                
+                document.getElementById('quiz-screen').classList.add('hidden');
+                
+                const transitionScreen = document.getElementById('transition-screen');
+                document.getElementById('transition-message').innerHTML = `Anem al nivell <strong>${nextLevelName}</strong>.`;
+                transitionScreen.classList.remove('hidden');
+                
+                this.currentLevelIndex++;
+                this.currentQuestionIndex = 0;
+                this.correctAnswersInLevel = 0;
+                
+                setTimeout(() => {
+                    if(!document.getElementById('quiz-screen').classList.contains('hidden-by-cheat')) {
+                        transitionScreen.classList.add('hidden');
+                        document.getElementById('quiz-screen').classList.remove('hidden');
+                        this.loadQuestion();
+                    }
+                }, 3000);
+            }
+        }
+    }
+    
+    invalidateByCheating(motiuText = "Test invalidat per obrir una altra pestanya") {
+        this.isQuizActive = false;
+        document.getElementById('quiz-screen').classList.add('hidden-by-cheat');
+        
+        let titolTrampa = `💔 Test suspès per irregularitats`;
+        this.showResults(titolTrampa, motiuText, true);
+    }
+    
+    showResults(titleHTML, levelText, isCheated = false) {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('level-badge').classList.add('hidden');
+        document.getElementById('transition-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        
+        const resultScreen = document.getElementById('result-screen');
+        const finalLevelDiv = document.getElementById('final-level');
+        const detailsParam = document.getElementById('result-details');
+        const reloadBtn = document.getElementById('reload-btn');
+        
+        resultScreen.classList.remove('hidden');
+        document.getElementById('result-title-container').innerHTML = titleHTML;
+        finalLevelDiv.innerText = levelText;
+        
+        if (isCheated) {
+            finalLevelDiv.className = "invalid-level";
+            detailsParam.innerHTML = "S'ha detectat una acció prohibida en entorn d'examen (sortir del test o drecera de captura).";
+            document.getElementById('subtitle').innerText = "TEST INVALIDAT";
+            reloadBtn.innerText = "Tancar examen";
+            reloadBtn.onclick = () => { alert("Si us plau, avisa al teu professor/a."); };
+        } else {
+            finalLevelDiv.className = "result-level";
+            detailsParam.innerText = "Has completat el qüestionari adaptatiu.";
+            document.getElementById('subtitle').innerText = "Test Finalitzat";
+        }
+    }
+}
+
+const quiz = new LevelQuiz(questionsData);
+
+// ==========================================
+// SEGURETAT: DETECTOR DE CANVI DE PESTANYA
+// ==========================================
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && quiz.isQuizActive) {
+        quiz.invalidateByCheating("Test invalidat per obrir una altra pestanya");
+    }
+});
+</script>
+</body>
+</html>
