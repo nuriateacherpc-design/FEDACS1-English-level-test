@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Level Test FEDAC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --primary-hover: #004085;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #666666;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --border-radius: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            
+            /* SEGURETAT: Evita seleccionar text */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .blur-antishot {
+            filter: blur(15px) !important;
+            transition: filter 0.1s ease;
+        }
+        
+        .container { width: 100%; max-width: 700px; background-color: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 40px; transition: all 0.3s ease; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; }
+        header h1 { color: var(--primary-color); font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        header p { color: var(--text-muted); font-size: 0.95rem; }
+        .badge { display: inline-block; background-color: #e1ecf4; color: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; margin-top: 10px; }
+        .hidden { display: none !important; }
+        .screen { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .screen p { margin-bottom: 25px; font-size: 1.1rem; line-height: 1.6; }
+        
+        .input-group { width: 100%; max-width: 320px; margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: var(--text-color); }
+        .name-input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: var(--border-radius); font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        .name-input:focus { border-color: var(--primary-color); }
+        
+        .question-box { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .question-text { font-size: 1.2rem; font-weight: 500; margin-bottom: 25px; line-height: 1.5; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .option-btn { background-color: #fff; border: 2px solid #e0e0e0; border-radius: var(--border-radius); padding: 16px 20px; text-align: left; font-family: inherit; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; }
+        .option-btn:hover { border-color: var(--primary-color); background-color: #f8faff; }
+        .option-btn.selected { border-color: var(--primary-color); background-color: #e1ecf4; font-weight: 600; }
+        .btn { background-color: var(--primary-color); color: white; border: none; border-radius: var(--border-radius); padding: 14px 30px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; width: 100%; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .progress-container { width: 100%; background-color: #e9ecef; border-radius: 10px; height: 8px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { background-color: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease; }
+        
+        .result-title { font-size: 1.5rem; margin-bottom: 15px; line-height: 1.4; color: var(--text-color); }
+        .result-level { font-size: 3.5rem; font-weight: 700; color: var(--success-color); margin-bottom: 20px; background: #eafaf1; padding: 10px 30px; border-radius: var(--border-radius); display: inline-block; width: 100%; }
+        .invalid-level { font-size: 1.6rem; font-weight: 600; color: var(--danger-color); margin-bottom: 20px; background: #fdeaea; padding: 15px 20px; border-radius: var(--border-radius); display: inline-block; width: 100%; line-height: 1.4; }
+
+        /* Disseny de la targeta de dades de temps */
+        .time-stats { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: var(--border-radius); padding: 15px; margin-top: 20px; width: 100%; max-width: 400px; text-align: left; font-size: 0.95rem; color: #495057; line-height: 1.6; }
+        .time-stats strong { color: var(--text-color); }
+
+        .transition-title { font-size: 1.8rem; font-weight: 600; color: var(--success-color); margin-bottom: 15px; }
+        .transition-text { font-size: 1.2rem; line-height: 1.6; color: var(--text-color); margin-bottom: 20px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--success-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div id="main-content" class="container">
+    <header>
+        <h1>English Level Test FEDAC</h1>
+        <p id="subtitle">Avalua el teu domini d'anglès amb el format oficial de Cambridge</p>
+        <div id="level-badge" class="badge hidden">Nivell Actual: A1</div>
+    </header>
+    
+    <div id="start-screen" class="screen">
+        <p>Benvingut/da al test de nivell adaptatiu de la FEDAC.<br>L'examen començarà amb el nivell A1 i s'anirà adaptant segons les teves respostes encertades.</p>
+        <p style="color: var(--danger-color); font-size: 0.9rem; font-weight: 600;">⚠️ RECORDA: Perquè el resultat sigui vàlid, mantén la finestra activa i evita obrir altres pestanyes o fer captures.</p>
+        
+        <div class="input-group">
+            <label for="student-name">Escriu el teu nom i cognom:</label>
+            <input type="text" id="student-name" class="name-input" placeholder="Ex: Joan Garcia" autocomplete="off">
+        </div>
+        
+        <button class="btn" onclick="quiz.start()">Començar el test</button>
+    </div>
+    
+    <div id="transition-screen" class="screen hidden">
+        <div class="transition-title">🎉 <span class="user-placeholder"></span>, felicitats!</div>
+        <p id="transition-message" class="transition-text">Anem al nivell...</p>
+        <div class="loader"></div>
+    </div>
+
+    <div id="quiz-screen" class="question-box hidden">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="question-text" class="question-text">Pregunta aquí</div>
+        <div id="options-container" class="options-container"></div>
+        <button id="next-btn" class="btn" onclick="quiz.nextQuestion()">Següent pregunta</button>
+    </div>
+    
+    <div id="result-screen" class="screen hidden">
+        <div id="result-title-container" class="result-title"></div>
+        <div id="final-level" class="result-level">--</div>
+        <p id="result-details" style="color: var(--text-muted); padding: 0 10px; line-height: 1.5;"></p>
+        
+        <div id="time-stats-container" class="time-stats"></div>
+
+        <button id="reload-btn" class="btn" style="margin-top: 25px;" onclick="location.reload()">Tornar a fer el test</button>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// SEGURETAT: BLOCATGE DE CLIC DRET I CÒPIA
+// ==========================================
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U' || e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        return false;
+    }
+    if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+    }
+    
+    if (e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4'))) {
+        document.getElementById('main-content').classList.add('blur-antishot');
+        if (quiz.isQuizActive) {
+            quiz.invalidateByCheating();
+        }
+    }
+});
+
+document.addEventListener('keyup', function(e) {
+    document.getElementById('main-content').classList.remove('blur-antishot');
+});
+
+document.addEventListener('copy', e => e.preventDefault());
+document.addEventListener('cut', e => e.preventDefault());
+
+// Base de dades reduïda d'exemple (A1-C2)
+const questionsData = {
+    'A1': [
+        { q: "Hello! What __________ your name?", o: ["is", "are", "am"], a: 0 },
+        { q: "I __________ a student. I study English.", o: ["is", "am", "are"], a: 1 },
+        { q: "Look at __________ birds up there in the tree!", o: ["this", "that", "those"], a: 2 },
+        { q: "She __________ two brothers.", o: ["have", "has", "having"], a: 1 },
+        { q: "__________ you like chocolate?", o: ["Do", "Does", "Are"], a: 0 }
+    ],
+    'A2': [
+        { q: "Yesterday, we __________ to the cinema and saw a great comedy.", o: ["go", "went", "gone"], a: 1 },
+        { q: "This laptop is __________ than my old one.", o: ["more fast", "faster", "the fastest"], a: 1 },
+        { q: "Have you __________ been to London?", o: ["ever", "never", "already"], a: 0 }
+    ],
+    'B1': [
+        { q: "This castle __________ by millions of tourists every year.", o: ["visits", "is visited", "is visiting", "visited"], a: 1 },
+        { q: "If I __________ more free time, I would take up tennis.", o: ["have", "will have", "had", "would have"], a: 2 },
+        { q: "The teacher told us __________ talking during the exam.", o: ["to stop", "stop", "stopping", "that we stop"], a: 0 }
+    ],
+    'B2': [
+        { q: "CLOZE: Living near a park can have a significant ______ on well-being.", o: ["result", "impact", "consequence", "outcome"], a: 1 },
+        { q: "CLOZE: Psychologists discovered that people ______ to have lower stress.", o: ["tend", "lean", "practice", "habit"], a: 0 }
+    ],
+    'C1': [
+        { q: "CLOZE: Intuition, often referred to ______ a 'gut feeling'...", o: ["as", "like", "for", "by"], a: 0 },
+        { q: "CLOZE: It is that sudden flash of insight ______ tells us whether...", o: ["who", "what", "that", "where"], a: 2 }
+    ],
+    'C2': [
+        { q: "WORD FORMATION: Purest view changes with deep ______ (APPROVE).", o: ["disapproval", "unapproval", "approveless", "misapproval"], a: 0 },
+        { q: "WORD FORMATION: Fear that a generation will become ______ (ARTICULATE) in formal settings.", o: ["inarticulate", "unarticulate", "disarticulate", "nonarticulate"], a: 0 }
+    ]
+};
+
+class LevelQuiz {
+    constructor(data) {
+        this.data = data;
+        this.levelsOrder = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.correctAnswersInLevel = 0;
+        this.selectedOption = null;
+        this.studentName = "";
+        this.isQuizActive = false;
+        
+        // Variables per controlar el temps
+        this.startTime = null;
+        this.formattedStartDate = "";
+        this.formattedStartTime = "";
+    }
+    get currentLevel() { return this.levelsOrder[this.currentLevelIndex]; }
+    get currentQuestionsList() { return this.data[this.currentLevel]; }
+    
+    start() {
+        const nameInput = document.getElementById('student-name');
+        this.studentName = nameInput.value.trim();
+        
+        if (this.studentName === "") {
+            alert("Per favor, escriu el teu nom abans de començar el test.");
+            return;
+        }
+        
+        // Registrar el moment exacte de l'inici
+        this.startTime = new Date();
+        
+        // Guardar data (DD/MM/AAAA) i hora (HH:MM) llegibles
+        const dia = String(this.startTime.getDate()).padStart(2, '0');
+        const mes = String(this.startTime.getMonth() + 1).padStart(2, '0');
+        const any = this.startTime.getFullYear();
+        this.formattedStartDate = `${dia}/${mes}/${any}`;
+        
+        const hora = String(this.startTime.getHours()).padStart(2, '0');
+        const minuts = String(this.startTime.getMinutes()).padStart(2, '0');
+        this.formattedStartTime = `${hora}:${minuts}`;
+        
+        const placeholders = document.querySelectorAll('.user-placeholder');
+        placeholders.forEach(el => el.innerText = this.studentName);
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        document.getElementById('level-badge').classList.remove('hidden');
+        
+        this.isQuizActive = true;
+        this.loadQuestion();
+    }
+    
+    loadQuestion() {
+        this.selectedOption = null;
+        const badge = document.getElementById('level-badge');
+        badge.innerText = `Alumne/a: ${this.studentName} | Bloc actiu: ${this.currentLevel}`;
+        const qData = this.currentQuestionsList[this.currentQuestionIndex];
+        const progressPercent = (this.currentQuestionIndex / this.currentQuestionsList.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        document.getElementById('question-text').innerText = `${this.currentQuestionIndex + 1}. ${qData.q}`;
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        qData.o.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.innerText = option;
+            button.onclick = () => this.selectOption(index, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+    
+    selectOption(index, buttonElement) {
+        this.selectedOption = index;
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(btn => btn.classList.remove('selected'));
+        buttonElement.classList.add('selected');
+    }
+    
+    nextQuestion() {
+        if (this.selectedOption === null) {
+            alert("Per favor, selecciona una resposta abans de continuar.");
+            return;
+        }
+        const correctAnswer = this.currentQuestionsList[this.currentQuestionIndex].a;
+        if (this.selectedOption === correctAnswer) {
+            this.correctAnswersInLevel++;
+        }
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= this.currentQuestionsList.length) {
+            this.evaluateLevelTransition();
+        } else {
+            this.loadQuestion();
+        }
+    }
+    
+    evaluateLevelTransition() {
+        const totalQuestions = this.currentQuestionsList.length;
+        const scorePercentage = (this.correctAnswersInLevel / totalQuestions) * 100;
+        const passed = scorePercentage >= 90;
+        
+        if (!passed) {
+            let textTitol = `<strong>${this.studentName}</strong>, tens un nivell`;
+            let codiNivell = "";
+            
+            if (this.currentLevel === 'A1') codiNivell = "preA1";
+            else if (this.currentLevel === 'A2') codiNivell = "A1+";
+            else if (this.currentLevel === 'B1') codiNivell = "A2+";
+            else if (this.currentLevel === 'B2') codiNivell = "B1+"; 
+            else if (this.currentLevel === 'C1') codiNivell = "B2+"; 
+            else if (this.currentLevel === 'C2') codiNivell = "C1+";
+            
+            this.isQuizActive = false;
+            this.showResults(textTitol, codiNivell, false);
+        } else {
+            if (this.currentLevel === 'C2') {
+                let textTitol = `<strong>${this.studentName}</strong>, felicitats el teu nivell és`;
+                this.isQuizActive = false;
+                this.showResults(textTitol, "C2", false);
+            } else {
+                const nextLevelName = this.levelsOrder[this.currentLevelIndex + 1];
+                document.getElementById('quiz-screen').classList.add('hidden');
+                
+                const transitionScreen = document.getElementById('transition-screen');
+                document.getElementById('transition-message').innerHTML = `Anem al nivell <strong>${nextLevelName}</strong>.`;
+                transitionScreen.classList.remove('hidden');
+                
+                this.currentLevelIndex++;
+                this.currentQuestionIndex = 0;
+                this.correctAnswersInLevel = 0;
+                
+                setTimeout(() => {
+                    if(!document.getElementById('quiz-screen').classList.contains('hidden-by-cheat')) {
+                        transitionScreen.classList.add('hidden');
+                        document.getElementById('quiz-screen').classList.remove('hidden');
+                        this.loadQuestion();
+                    }
+                }, 3000);
+            }
+        }
+    }
+    
+    invalidateByCheating() {
+        this.isQuizActive = false;
+        document.getElementById('quiz-screen').classList.add('hidden-by-cheat');
+        this.showResults(`⚠️ Test interromput`, `Aquest intent s'ha invalidat`, true);
+    }
+    
+    // Funció interna per calcular la durada de la prova
+    calculateDuration() {
+        if (!this.startTime) return "No registrat";
+        const endTime = new Date();
+        const diffMs = endTime - this.startTime; // diferència en mil·lisegons
+        const totalSegons = Math.floor(diffMs / 1000);
+        const minuts = Math.floor(totalSegons / 60);
+        const segons Restants = totalSegons % 60;
+        
+        if (minuts === 0) {
+            return `${segonsRestants} segons`;
+        }
+        return `${minuts} minuts i ${segonsRestants} segons`;
+    }
+    
+    showResults(titleHTML, levelText, isCheated = false) {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('level-badge').classList.add('hidden');
+        document.getElementById('transition-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        
+        const resultScreen = document.getElementById('result-screen');
+        const finalLevelDiv = document.getElementById('final-level');
+        const detailsParam = document.getElementById('result-details');
+        const reloadBtn = document.getElementById('reload-btn');
+        const timeStatsDiv = document.getElementById('time-stats-container');
+        
+        resultScreen.classList.remove('hidden');
+        document.getElementById('result-title-container').innerHTML = titleHTML;
+        finalLevelDiv.innerHTML = levelText;
+        
+        // Calcular i mostrar data, hora i durada exactes
+        const tempsAtansat = this.calculateDuration();
+        timeStatsDiv.innerHTML = `
+            📅 <strong>Data:</strong> ${this.formattedStartDate}<br>
+            🕒 <strong>Hora d'inici:</strong> ${this.formattedStartTime}<br>
+            ⏱️ <strong>Temps total:</strong> ${tempsAtansat}
+        `;
+        
+        reloadBtn.innerText = "Tornar a fer el test";
+        reloadBtn.onclick = () => { location.reload(); };
+        
+        if (isCheated) {
+            finalLevelDiv.className = "invalid-level";
+            detailsParam.innerHTML = "Recorda que això és només un test per saber el teu nivell real d'anglès i apuntar el que saps. Com que s'ha sortit de la pantalla o s'ha detectat una captura, el resultat ja no és fiable.";
+            document.getElementById('subtitle').innerText = "PROVA INTERROMPUDA";
+        } else {
+            finalLevelDiv.className = "result-level";
+            detailsParam.innerText = "Has completat el qüestionari adaptatiu.";
+            document.getElementById('subtitle').innerText = "Test Finalitzat";
+        }
+    }
+}
+
+const quiz = new LevelQuiz(questionsData);
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && quiz.isQuizActive) {
+        quiz.invalidateByCheating();
+    }
+});
+</script>
+</body>
+</html>
